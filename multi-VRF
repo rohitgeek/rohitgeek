@@ -1,0 +1,21 @@
+apt-get -f install
+apt install vlan
+!
+vconfig add ens224 2501
+vconfig add ens224 2502
+!
+ip link add RED_A type vrf table 1
+ip link add RED_B type vrf table 2
+!
+ip link set dev RED_A up
+ip link set dev RED_B up
+!
+ip link set ens224.2501 master RED_A
+ip link set ens224.2502 master RED_B
+!
+ifconfig ens224.2501 1.1.1.2 netmask 255.255.255.0
+ifconfig ens224.2502 1.1.2.2 netmask 255.255.255.0
+!
+ifconfig ens224.2501 inet6 add 1::1:2/120
+ifconfig ens224.2502 inet6 add 1::2:2/120
+!
