@@ -1,0 +1,154 @@
+Interview Questions
+Explain a situation where you work innovatively ?
+Explain a situation where you worked overriding a company procedure ?
+Explain a situation where you achieved a Goal and how you would have achieve it better if you have a chance now ?
+
+#TCP Questions
+How does the TCP work ? Explain Flow control and Windowing in detail ?
+What are the TCP flags ? Explain in detail when they are used ?
+If one packet is missed during the transfer(From 8,9,10 packet 10 is missed) how can you get that packet back ?
+What is Acknowledgment and Sequencing ? What is the difference ?
+where the use of IP Selective ACK would be used and why
+path mtu discovery and the tcp state transition diagram.
+
+#Routing Protocol Questions
+You will have to select one of the protocol..Either OSPF or BGP .I chose OSPF.
+What are the OSPF states ? What is happening at each state ?
+What are the pre-requisite to be OSPF neighbors ?
+If a Router is in Ex-Stat State what are the possible cause to stay in that state ?
+How does OSPF prevent loops ?
+what are the Stubby area ,totally stuby area and NSSA area what are the types of allowed and blocked at each of the area ?
+How does traceroute work ?
+Once a link down how does it notified to the rest of the network ?
+Why we use areas ?
+
+#Other Questions
+What are the steps your PC browsing the Amazon web site ?
+How does DNS works ? How does trace route works ? Route-53
+When PC 1 communicate to PC 2 how it knows the Window size of the Receiver ?
+What happens when there is a packet drop in the Network ? How does TCP over come with it ?
+How does MPLS ping and MPLS traceroute works ?
+What is a BGP Route reflector ?
+
+
+==================
+Issues of Slowness
+===================
+
+TCP Retransmissions
+TCP Out-of-Order
+Duplicate ACKs
+Zero Windows
+
+
+
+https://www.youtube.com/watch?v=rwu8__GG_rw       ------- IPSec
+https://www.youtube.com/watch?v=2PtK8HgkRvM       ------- IPSec over GRE
+https://www.youtube.com/watch?v=BsxQqRxD3Q4       ------- IPSec over GRE (INE)
+https://www.youtube.com/watch?v=v-DeG_LOu7c       ------- Tshoot of IPSec over GRE
+https://www.youtube.com/watch?v=e2xLV7pCOLI       ------- DNS
+https://www.youtube.com/watch?v=15wDU3Wx1h0       ------- TCP (One in all)
+https://www.youtube.com/watch?v=vGy1Dkvck7E       ------- DMVPN
+https://www.youtube.com/watch?v=_uQrJ0TkZlc       ------- Python
+https://developer.cisco.com/video/net-prog-basics/  ------- Cisco DevNet
+
+seeate@amazon.com
+
+
+
+https://networklessons.com/cisco/ccie-routing-switching-written/vrf-lite-route-leaking
+
+
+https://www.visas.inis.gov.ie/AVATS/OnlineHome2.aspx
+Your unique transaction number is - IRL40944702
+https://www.visas.inis.gov.ie/AVATS/RetrieveApplication.aspx
+https://www.vfsvisaonline.com/IrelandOnlineTracking/pages/OnlineTracking.aspx
+
+
+
+std chartered
+rohitshrm97 --- VMware123
+
+
+
+enthought
+continuum.io
+ipython.Org (jupyter)
+python package index(pyPi)
+Objects can have attributes and methods(router object, version attribute, create_bgp method)
+routers.items
+
+
+
+
+=================
+Coding:
+=================
+
+
+1) Given a string, check if it is a palindrome by ignoring spaces. E.g. race car would be a palindrome.
+2) Given two very large strings, consisting of only digits, multiply the two strings and return the result as a string.
+
+
+    Converting Decimal Number lying between 1 to 3999 to Roman Numerals
+    Find all triplets with zero sum
+    Largest subset whose all elements are Fibonacci numbers
+    Calculate maximum value using ‘+’ or ‘*’ sign between two numbers in a string
+    Convert Ternary Expression to a Binary Tree
+    Converting Roman Numerals to Decimal lying between 1 to 3999
+    Count all distinct pairs with difference equal to k
+    Decode a string recursively encoded as count followed by substring
+    Find if string is K-Palindrome or not | Set 2
+    Find Minimum Depth of a Binary Tree
+    Find subarray with given sum | Set 1 (Nonnegative Numbers)
+    Given two unsorted arrays, find all pairs whose sum is x
+    Greedy Algorithms | Set 1 (Activity Selection Problem)
+    Look-and-Say Sequence
+    Smallest subarray with sum greater than a given value
+    Program to add two binary strings
+    Rearrange a string in sorted order followed by the integer sum
+
+Medium Level
+
+    Boggle | Set 2 (Using Trie)
+    Count Possible Decodings of a given Digit Sequence
+    Inplace rotate square matrix by 90 degrees | Set 1
+    Largest Rectangular Area in a Histogram | Set 2
+    Largest sum subarray with at-least k numbers
+    Multiply Large Numbers represented as Strings
+
+
+Hard Level
+
+    Median in a stream of integers (running integers)
+    Find m-th smallest value in k sorted arrays
+
+1. You have an array of n elements, and a sum. Check if any 2 elements in the array sum to the given sum. ( Expected time complexity O(n). Use hashing)
+
+2. Extended the previous problem to sum of 3 elements in the array summing up to the given sum.
+
+Question 1: Write a function that takes a sorted list of integers and a target value k and counts the number of occurrences of k in the list.
+
+Question 2: Find the maximum path sum in a binary tree.
+
+-
+1. Given a string, display the words in reverse order
+I/p: I work at xyz
+O/p: xyz at work I
+
+2. Given a linked list modify the linked list as below
+I/p: a x b c y z
+O/p: a b c x y z
+
+3. What is virtual memory
+
+4. If I am designing a media player and I want to store songs and play them in random order
+a) what data structure will you use to store songs?
+b) how will select the next song to play in a way which prevents the same song being played in consecutive turn
+
+BGP, TCP handshake, OSPF, lot of behavioral palindrome , arrange vowel and then consonant and given string, Regex
+
+
+----
+
+Due to Non-Disclosure agreement, I cannot disclose any questions here. But my advice would be clear all your networking fundamentals, their operations and how can you able to utilize them in real time networking operations and issues. Day to day working operations of VLAN, PVLAN, STP, RSTP, Split horizon, VRRP, HSRP, commonly used routing protocols such as OSPF, MPLS, BGP, RIP, EIGRP, IS-IS, ECMP, SNMP, ICMP, etc. In terms of coding, clear your data structure knowledge in terms of Network Automation, such as explain and code how to configure any of the routing protocols on one to may routers or switches at the same time. So be prepared well with python scripting language, network automation tools such as Ansible, automation libraries like Napalm, Netmiko, Paramiko. I think this would be enough for you to make through it. I was able to crack the interview but since I didn't had any relevant internship or full time experience, they didn't move forward with me, but advised me to get relevant experience for couple of months and reapply. Entire experience was very positive! I would definitely love to consider Facebook as my future place to work for.
