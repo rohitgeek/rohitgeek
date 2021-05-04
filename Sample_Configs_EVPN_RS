@@ -1,0 +1,241 @@
+ifconfig ens257 up
+vconfig add ens257 1010
+ifconfig ens257.1010 10.10.1.10 netmask 255.255.255.0
+!
+vconfig add ens257 1020
+ifconfig ens257.1020 10.20.1.10 netmask 255.255.255.0
+!
+ip link add RED type vrf table 1
+ip link set dev RED up
+!
+ip link add GREEN type vrf table 2
+ip link set dev GREEN up
+!
+ip link add BLUE type vrf table 3
+ip link set dev BLUE up
+!
+ip link set dev ens161 up
+ip link set dev ens224 up
+ip link set dev ens193 up
+ip link set dev ens192 up
+!
+ip link add vxlan100 type vxlan id 100 dstport 4789 local 100.0.0.10
+brctl addbr br100
+brctl addif br100 vxlan100
+brctl addif br100 ens161
+ip addr add 1.10.1.10/24 dev br100
+brctl stp br100 off
+ip link set up dev br100
+ip link set up dev vxlan100
+ip link set dev br100 master RED
+ip -6 addr add 1:10::1:10/64 dev br100
+!
+ip link add vxlan200 type vxlan id 200 dstport 4789 local 100.0.0.10
+brctl addbr br200
+brctl addif br200 vxlan200
+brctl addif br200 ens224
+ip addr add 2.10.1.10/24 dev br200
+brctl stp br200 off
+ip link set up dev br200
+ip link set up dev vxlan200
+ip link set dev br200 master GREEN
+ip -6 addr add 2:10::1:10/64 dev br200
+!
+ip link add vxlan300 type vxlan id 300 dstport 4789 local 100.0.0.10
+brctl addbr br300
+brctl addif br300 vxlan300
+brctl addif br300 ens193
+ip addr add 2.10.10.10/24 dev br300
+brctl stp br300 off
+ip link set up dev br300
+ip link set up dev vxlan300
+ip link set dev br300 master BLUE
+ip -6 addr add 2:10::10:10/64 dev br300
+!
+ip link add vxlan1000 type vxlan id 1000 dstport 4789 local 100.0.0.10
+brctl addbr br1000
+brctl addif br1000 vxlan1000
+brctl stp br1000 off
+ip link set up dev br1000
+ip link set up dev vxlan1000
+ip link set dev br1000 master RED
+!
+ip link add vxlan2000 type vxlan id 2000 dstport 4789 local 100.0.0.10
+brctl addbr br2000
+brctl addif br2000 vxlan2000
+brctl stp br2000 off
+ip link set up dev br2000
+ip link set up dev vxlan2000
+ip link set dev br2000 master GREEN
+!
+ip link add vxlan3000 type vxlan id 3000 dstport 4789 local 100.0.0.10
+brctl addbr br3000
+brctl addif br3000 vxlan3000
+brctl stp br3000 off
+ip link set up dev br3000
+ip link set up dev vxlan3000
+ip link set dev br3000 master BLUE
+!
+ip neighbor add 1.10.1.25 dev br100 lladdr 00:10:56:b7:e3:14
+ip neighbor add 1:10::1:25 dev br100 lladdr 00:10:56:b7:e3:14
+bridge fdb add 00:10:56:b7:e3:14 dev vxlan100 dst 1.10.1.25 temp
+!
+ip neighbor add 1.10.1.99 dev br100 lladdr 00:20:56:b7:e3:14
+ip neighbor add 1:10::1:99 dev br100 lladdr 00:20:56:b7:e3:14
+bridge fdb add 00:20:56:b7:e3:14 dev vxlan100 dst 1.10.1.99 temp
+!
+ip neighbor add 2.10.1.99 dev br200 lladdr 00:30:56:b7:e3:14
+ip neighbor add 2:10::1:99 dev br200 lladdr 00:30:56:b7:e3:14
+bridge fdb add 00:30:56:b7:e3:14 dev vxlan200 dst 2.10.1.99 temp
+!
+ip neighbor add 2.10.10.99 dev br300 lladdr 00:40:56:b7:e3:14
+ip neighbor add 2:10::10:99 dev br300 lladdr 00:40:56:b7:e3:14
+bridge fdb add 00:40:56:b7:e3:14 dev vxlan300 dst 2.10.10.99 temp
+!
+ip neighbor add 1.10.1.1 dev br100 lladdr 00:50:56:b7:e3:14
+ip neighbor add 1:10::1:1 dev br100 lladdr 00:50:56:b7:e3:14
+bridge fdb add 00:50:56:b7:e3:14 dev vxlan100 dst 1.10.1.1 temp
+!
+ip neighbor add 1.10.1.2 dev br100 lladdr 00:50:56:b7:c5:8e
+ip neighbor add 1:10::1:2 dev br100 lladdr 00:50:56:b7:c5:8e
+bridge fdb add 00:50:56:b7:c5:8e dev vxlan100 dst 1.10.1.2 temp
+!
+ip neighbor add 2.10.1.2 dev br200 lladdr 00:50:56:b7:5c:3d
+ip neighbor add 2:10::1:2 dev br200 lladdr 00:50:56:b7:5c:3d
+bridge fdb add 00:50:56:b7:5c:3d dev vxlan200 dst 2.10.1.2 temp
+!
+ip neighbor add 2.10.10.2 dev br300 lladdr 00:50:56:b7:9d:0e
+ip neighbor add 2:10::10:2 dev br300 lladdr 00:50:56:b7:9d:0e
+bridge fdb add 00:50:56:b7:9d:0e dev vxlan300 dst 2.10.10.2 temp
+!
+ip route 200.0.0.20/32 ens257.1020
+!
+vrf BLUE
+ip route 60.60.60.3/32 2.10.10.99
+ip route 60.60.60.60/32 2.10.10.99
+ipv6 route 60:60::3/128 2:10::10:99
+ipv6 route 60:60::60/128 2:10::10:99
+vni 3000 prefix-routes-only
+exit-vrf
+!
+vrf GREEN
+ip route 50.50.50.5/32 2.10.1.99
+ip route 50.50.50.50/32 2.10.1.99
+ipv6 route 50:50::5/128 2:10::1:99
+ipv6 route 50:50::50/128 2:10::1:99
+vni 2000 prefix-routes-only
+exit-vrf
+!
+vrf RED
+ip route 40.40.40.4/32 1.10.1.99
+ip route 40.40.40.40/32 1.10.1.99
+ip route 44.44.44.4/32 1.10.1.25
+ip route 44.44.44.44/32 1.10.1.25
+ipv6 route 40:40::4/128 1:10::1:99
+ipv6 route 40:40::40/128 1:10::1:99
+ipv6 route 44:44::4/128 1:10::1:25
+ipv6 route 44:44::44/128 1:10::1:25
+vni 1000 prefix-routes-only
+exit-vrf
+!
+router bgp 10
+neighbor 10.10.1.100 remote-as 10
+neighbor 10.10.1.100 shutdown
+neighbor 10.20.1.20 remote-as 20
+!
+address-family ipv4 unicast
+no neighbor 10.10.1.100 activate
+no neighbor 10.20.1.20 activate
+exit-address-family
+!
+address-family l2vpn evpn
+neighbor 10.10.1.100 activate
+neighbor 10.20.1.20 activate
+vni 300
+rd 3.3.3.3:3
+route-target import 333:333
+route-target export 333:333
+exit-vni
+vni 200
+rd 2.2.2.2:2
+route-target import 222:222
+route-target export 222:222
+exit-vni
+vni 100
+rd 1.1.1.1:1
+route-target import 111:111
+route-target export 111:111
+exit-vni
+advertise-all-vni route-server
+exit-address-family
+!
+router bgp 10 vrf BLUE
+neighbor 2.10.10.2 remote-as 2
+neighbor 2:10::10:2 remote-as 2
+!
+address-family ipv4 unicast
+redistribute static
+no neighbor 2:10::10:2 activate
+exit-address-family
+!
+address-family ipv6 unicast
+redistribute static
+neighbor 2:10::10:2 activate
+exit-address-family
+!
+address-family l2vpn evpn
+advertise ipv4 unicast gateway-ip
+advertise ipv6 unicast gateway-ip
+rd 33.33.33.33:33
+route-target import 30001:30001
+route-target export 30001:30001
+exit-address-family
+!
+router bgp 10 vrf GREEN
+neighbor 2.10.1.2 remote-as 2
+neighbor 2:10::1:2 remote-as 2
+!
+address-family ipv4 unicast
+redistribute static
+no neighbor 2:10::1:2 activate
+exit-address-family
+!
+address-family ipv6 unicast
+redistribute static
+neighbor 2:10::1:2 activate
+exit-address-family
+!
+address-family l2vpn evpn
+advertise ipv4 unicast gateway-ip
+advertise ipv6 unicast gateway-ip
+rd 22.22.22.22:22
+route-target import 20001:20001
+route-target export 20001:20001
+exit-address-family
+!
+router bgp 10 vrf RED
+neighbor 1.10.1.1 remote-as 1
+neighbor 1.10.1.2 remote-as 2
+neighbor 1:10::1:1 remote-as 1
+neighbor 1:10::1:2 remote-as 2
+!
+address-family ipv4 unicast
+redistribute static
+no neighbor 1:10::1:1 activate
+no neighbor 1:10::1:2 activate
+exit-address-family
+!
+address-family ipv6 unicast
+redistribute static
+neighbor 1:10::1:1 activate
+neighbor 1:10::1:2 activate
+exit-address-family
+!
+address-family l2vpn evpn
+advertise ipv4 unicast gateway-ip
+advertise ipv6 unicast gateway-ip
+rd 11.11.11.11:11
+route-target import 10001:10001
+route-target export 10001:10001
+exit-address-family
+!
