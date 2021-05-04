@@ -1,0 +1,316 @@
+ip link set dev ens192 up
+ip link set dev ens224 up
+
+#Loopback
+ip addr add 100.0.0.20/32 dev lo
+ip link set up dev lo
+
+#BLUE
+ip link add BLUE type vrf table 11
+ip link set dev BLUE up
+
+#RED
+ip link add RED type vrf table 12
+ip link set dev RED up
+
+#GREEN
+ip link add GREEN type vrf table 10
+ip link set dev GREEN up
+
+#edge-dcgw
+ip addr add 10.0.1.20/24 dev ens192
+ip link set dev ens192 up
+
+#vlan module
+modprobe 8021q
+modprobe bonding
+
+#Physical for Bond interfaces
+vconfig set_name_type VLAN_PLUS_VID_NO_PAD
+vconfig add ens224 101
+vconfig add ens224 201
+vconfig add ens224 301
+
+#Bridge: VLAN aware
+ip link add dev bridge type bridge stp_state 0
+ip link set dev bridge type bridge vlan_filtering 1
+ip link set dev bridge mtu 9216
+ip link set dev bridge type bridge ageing_time 1800
+ip link set dev bridge type bridge mcast_snooping 0
+ip link set dev bridge type bridge vlan_stats_enabled 1
+ip link set dev bridge up
+bridge vlan add vid 100 dev bridge self
+bridge vlan add vid 200 dev bridge self
+bridge vlan add vid 300 dev bridge self
+
+#SVI 100
+ip link add link bridge name vlan100 type vlan id 100 protocol 802.1q
+ip link set dev vlan100 master RED
+ip link set dev vlan100 up
+ip addr add 1.10.1.20/24 dev vlan100
+ip -6 addr add 1:10::1:20/64 dev vlan100
+
+#SVI200
+ip link add link bridge name vlan200 type vlan id 200 protocol 802.1q
+ip link set dev vlan200 master GREEN
+ip link set dev vlan200 up
+ip addr add 2.10.1.20/24 dev vlan200
+ip -6 addr add 2:10::1:20/64 dev vlan200
+
+#SVI300
+ip link add link bridge name vlan300 type vlan id 300 protocol 802.1q
+ip link set dev vlan300 master BLUE
+ip link set dev vlan300 up
+ip addr add 2.10.10.20/24 dev vlan300
+ip -6 addr add 2:10::10:20/64 dev vlan300
+
+# VNI 100 Config VxLAN
+ip link add dev vxlan100 type vxlan id 100 dstport 4789
+ip link set dev vxlan100 type vxlan nolearning
+ip link set dev vxlan100 type vxlan local 100.0.0.20
+ip link set dev vxlan100 type vxlan ttl 64
+ip link set dev vxlan100 mtu 9152
+ip link set dev vxlan100 up
+
+ip link set dev vxlan100 master bridge
+bridge link set dev vxlan100 neigh_suppress on
+bridge link set dev vxlan100 learning off
+bridge link set dev vxlan100 priority 8
+bridge vlan del vid 1 dev vxlan100
+bridge vlan del vid 1 untagged pvid dev vxlan100
+bridge vlan add vid 100 dev vxlan100
+bridge vlan add vid 100 untagged pvid dev vxlan100
+
+
+# VNI 200 Config VxLAN
+ip link add dev vxlan200 type vxlan id 200 dstport 4789
+ip link set dev vxlan200 type vxlan nolearning
+ip link set dev vxlan200 type vxlan local 100.0.0.20
+ip link set dev vxlan200 type vxlan ttl 64
+ip link set dev vxlan200 mtu 9152
+ip link set dev vxlan200 up
+
+ip link set dev vxlan200 master bridge
+bridge link set dev vxlan200 neigh_suppress on
+bridge link set dev vxlan200 learning off
+bridge link set dev vxlan200 priority 8
+bridge vlan del vid 1 dev vxlan200
+bridge vlan del vid 1 untagged pvid dev vxlan200
+bridge vlan add vid 200 dev vxlan200
+bridge vlan add vid 200 untagged pvid dev vxlan200
+
+# VNI 300 Config VxLAN
+ip link add dev vxlan300 type vxlan id 300 dstport 4789
+ip link set dev vxlan300 type vxlan nolearning
+ip link set dev vxlan300 type vxlan local 100.0.0.20
+ip link set dev vxlan300 type vxlan ttl 64
+ip link set dev vxlan300 mtu 9152
+ip link set dev vxlan300 up
+
+ip link set dev vxlan300 master bridge
+bridge link set dev vxlan300 neigh_suppress on
+bridge link set dev vxlan300 learning off
+bridge link set dev vxlan300 priority 8
+bridge vlan del vid 1 dev vxlan300
+bridge vlan del vid 1 untagged pvid dev vxlan300
+bridge vlan add vid 300 dev vxlan300
+bridge vlan add vid 300 untagged pvid dev vxlan300
+
+#ESI 1 bond
+ip link add dev bond1 type bond mode 802.3ad
+ip link set dev bond1 type bond lacp_rate 1
+ip link set dev bond1 type bond miimon 100
+ip link set dev bond1 type bond xmit_hash_policy layer3+4
+ip link set dev bond1 type bond min_links 1
+ip link set dev bond1 type bond ad_actor_system 44:38:39:ff:ff:01
+ip link set dev bond1 up
+ip link set dev bond1 master bridge
+
+bridge vlan del vid 1 dev bond1
+bridge vlan del vid 1 untagged pvid dev bond1
+bridge vlan add vid 100 dev bond1
+bridge vlan add vid 100 untagged pvid dev bond1
+ip link set dev vlan101 master bond1
+ip link set dev vlan101 up
+
+
+#L3VNI, vxlan10001
+ip link add vxlan10001 type vxlan id 10001 dstport 4789 local 100.0.0.20
+ip link set up dev vxlan10001
+brctl addbr b10001
+brctl addif b10001 vxlan10001
+brctl stp b10001 off
+ip link set up dev b10001
+ip link set dev b10001 master RED
+
+#L3VNI, vxlan10002
+ip link add vxlan10002 type vxlan id 10002 dstport 4789 local 100.0.0.20
+ip link set up dev vxlan10002
+brctl addbr b10002
+brctl addif b10002 vxlan10002
+brctl stp b10002 off
+ip link set up dev b10002
+ip link set dev b10002 master GREEN
+
+#L3VNI, vxlan10003
+ip link add vxlan10003 type vxlan id 10003 dstport 4789 local 100.0.0.20
+ip link set up dev vxlan10003
+brctl addbr b10003
+brctl addif b10003 vxlan10003
+brctl stp b10003 off
+ip link set up dev b10003
+ip link set dev b10003 master BLUE
+
+
+#ESI 2 bond
+ip link add dev bond2 type bond mode 802.3ad
+ip link set dev bond2 type bond lacp_rate 1
+ip link set dev bond2 type bond miimon 100
+ip link set dev bond2 type bond xmit_hash_policy layer3+4
+ip link set dev bond2 type bond min_links 1
+ip link set dev bond2 type bond ad_actor_system 44:38:39:ff:ff:02
+
+ip link set dev bond2 up
+ip link set dev bond2 master bridge
+
+bridge vlan del vid 1 dev bond2
+bridge vlan del vid 1 untagged pvid dev bond2
+bridge vlan add vid 200 dev bond2
+bridge vlan add vid 200 untagged pvid dev bond2
+ip link set dev vlan201 master bond2
+ip link set dev vlan201 up
+
+
+#ESI 3 bond
+ip link add dev bond3 type bond mode 802.3ad
+ip link set dev bond3 type bond lacp_rate 1
+ip link set dev bond3 type bond miimon 100
+ip link set dev bond3 type bond xmit_hash_policy layer3+4
+ip link set dev bond3 type bond min_links 1
+ip link set dev bond3 type bond ad_actor_system 44:38:39:ff:ff:03
+
+ip link set dev bond3 up
+ip link set dev bond3 master bridge
+
+bridge vlan del vid 1 dev bond3
+bridge vlan del vid 1 untagged pvid dev bond3
+bridge vlan add vid 300 dev bond3
+bridge vlan add vid 300 untagged pvid dev bond3
+ip link set dev vlan301 master bond3
+ip link set dev vlan301 up
+
+====
+
+ip route 100.0.0.10/32 10.0.1.1
+!
+vrf BLUE
+ip route 66.66.66.6/32 2.10.10.50
+ip route 66.66.66.66/32 2.10.10.50
+ipv6 route 66:66::6/128 2:10::10:50
+ipv6 route 66:66::66/128 2:10::10:50
+vni 10003 prefix-routes-only
+exit-vrf
+!
+vrf GREEN
+ip route 55.55.55.5/32 2.10.1.50
+ip route 55.55.55.55/32 2.10.1.50
+ipv6 route 55:55::5/128 2:10::1:50
+ipv6 route 55:55::55/128 2:10::1:50
+vni 10002 prefix-routes-only
+exit-vrf
+!
+vrf RED
+ip route 44.44.44.4/32 1.10.1.50
+ip route 44.44.44.44/32 1.10.1.50
+ipv6 route 44:44::4/128 1:10::1:50
+ipv6 route 44:44::44/128 1:10::1:50
+vni 10001 prefix-routes-only
+exit-vrf
+!
+interface bond1
+evpn mh es-id 1
+evpn mh es-sys-mac 44:38:39:ff:ff:01
+!
+interface bond2
+evpn mh es-id 2
+evpn mh es-sys-mac 44:38:39:ff:ff:02
+!
+interface bond3
+evpn mh es-id 3
+evpn mh es-sys-mac 44:38:39:ff:ff:03
+!
+router bgp 20
+bgp router-id 100.0.0.20
+neighbor 10.0.1.1 remote-as 10
+!
+address-family ipv4 unicast
+redistribute static
+exit-address-family
+!
+address-family l2vpn evpn
+neighbor 10.0.1.1 activate
+advertise-all-vni inline
+exit-address-family
+!
+router bgp 20 vrf RED
+!
+address-family ipv4 unicast
+redistribute static
+exit-address-family
+!
+address-family ipv6 unicast
+redistribute static
+exit-address-family
+!
+address-family l2vpn evpn
+advertise ipv4 unicast gateway-ip
+advertise ipv6 unicast gateway-ip
+exit-address-family
+!
+router bgp 20 vrf GREEN
+!
+address-family ipv4 unicast
+redistribute static
+exit-address-family
+!
+address-family ipv6 unicast
+redistribute static
+exit-address-family
+!
+address-family l2vpn evpn
+advertise ipv4 unicast gateway-ip
+advertise ipv6 unicast gateway-ip
+exit-address-family
+!
+router bgp 20 vrf BLUE
+!
+address-family ipv4 unicast
+redistribute static
+exit-address-family
+!
+address-family ipv6 unicast
+redistribute static
+exit-address-family
+!
+address-family l2vpn evpn
+advertise ipv4 unicast gateway-ip
+advertise ipv6 unicast gateway-ip
+exit-address-family
+!
+
+===
+
+
+ip neighbor add 1.10.1.50 dev vlan100 lladdr 00:50:56:b7:c1:ae
+ip neighbor add 1:10::1:50 dev vlan100 lladdr 00:50:56:b7:c1:ae
+bridge fdb add 00:50:56:b7:c1:ae dev bond1 vlan 100 master static
+!
+ip neighbor add 2.10.1.50 dev vlan200 lladdr 00:50:56:b7:c2:ae
+ip neighbor add 2:10::1:50 dev vlan200 lladdr 00:50:56:b7:c2:ae
+bridge fdb add 00:50:56:b7:c2:ae dev bond2 vlan 200 master static
+!
+ip neighbor add 2.10.10.50 dev vlan300 lladdr 00:50:56:b7:c3:ae
+ip neighbor add 2:10::10:50 dev vlan300 lladdr 00:50:56:b7:c3:ae
+bridge fdb add 00:50:56:b7:c3:ae dev bond3 vlan 300 master static
+
+===
